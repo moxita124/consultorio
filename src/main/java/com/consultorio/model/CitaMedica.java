@@ -25,7 +25,7 @@ public class CitaMedica {
     private LocalTime hora;
 
     @Column(nullable = false)
-    private String motivos;
+    private String motivo;
 
     @ManyToOne
     @JoinColumn(name = "paciente_id", nullable = false)
