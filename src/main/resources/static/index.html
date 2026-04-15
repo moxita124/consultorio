@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultorio Médico</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fb;
+            color: #333;
+        }
+
+        header {
+            background-color: #2c7be5;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        main {
+            width: 90%;
+            max-width: 1000px;
+            margin: 30px auto;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #2c7be5;
+        }
+
+        form {
+            display: grid;
+            gap: 10px;
+        }
+
+        input, button {
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        input {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            border: none;
+            border-radius: 6px;
+            background-color: #2c7be5;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1a68d1;
+        }
+
+        .secondary {
+            background-color: #28a745;
+        }
+
+        .secondary:hover {
+            background-color: #218838;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .mensaje {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #c0392b;
+        }
+
+        .success {
+            color: #1e8449;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Sistema de Gestión de Consultorio Médico</h1>
+</header>
+
+<main>
+
+    <section class="card">
+        <h2>Registrar Paciente</h2>
+        <form id="formPaciente">
+            <input type="text" id="nombre" placeholder="Nombre" required>
+            <input type="text" id="apellido" placeholder="Apellido" required>
+            <input type="text" id="dni" placeholder="DNI" required>
+            <input type="text" id="telefono" placeholder="Teléfono" required>
+            <button type="submit">Guardar paciente</button>
+        </form>
+        <p id="mensajePaciente" class="mensaje"></p>
+    </section>
+
+    <section class="card">
+        <h2>Lista de Pacientes</h2>
+        <button class="secondary" onclick="listarPacientes()">Mostrar pacientes</button>
+        <ul id="listaPacientes"></ul>
+    </section>
+
+    <section class="card">
+        <h2>Registrar Cita Médica</h2>
+        <form id="formCita">
+            <input type="date" id="fecha" required>
+            <input type="time" id="hora" required>
+            <input type="text" id="motivo" placeholder="Motivo de la cita" required>
+            <input type="number" id="pacienteId" placeholder="ID del paciente" required>
+            <button type="submit">Guardar cita</button>
+        </form>
+        <p id="mensajeCita" class="mensaje"></p>
+    </section>
+
+    <section class="card">
+        <h2>Lista de Citas</h2>
+        <button class="secondary" onclick="listarCitas()">Mostrar citas</button>
+        <ul id="listaCitas"></ul>
+    </section>
+
+</main>
+
+<script>
+    const apiPacientes = "/pacientes";
+    const apiCitas = "/citas";
+
+    document.getElementById("formPaciente").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const paciente = {
+            nombre: document.getElementById("nombre").value,
+            apellido: document.getElementById("apellido").value,
+            dni: document.getElementById("dni").value,
+            telefono: document.getElementById("telefono").value
+        };
+
+        const mensaje = document.getElementById("mensajePaciente");
+
+        try {
+            const response = await fetch(apiPacientes, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(paciente)
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudo registrar el paciente");
+            }
+
+            const data = await response.json();
+            mensaje.textContent = "Paciente registrado con ID: " + data.id;
+            mensaje.className = "mensaje success";
+            document.getElementById("formPaciente").reset();
+        } catch (error) {
+            mensaje.textContent = error.message;
+            mensaje.className = "mensaje error";
+        }
+    });
+
+    async function listarPacientes() {
+        const lista = document.getElementById("listaPacientes");
+        lista.innerHTML = "";
+
+        try {
+            const response = await fetch(apiPacientes);
+            if (!response.ok) {
+                throw new Error("No se pudieron obtener los pacientes");
+            }
+
+            const pacientes = await response.json();
+
+            pacientes.forEach(paciente => {
+                const item = document.createElement("li");
+                item.textContent = `ID: ${paciente.id} - ${paciente.nombre} ${paciente.apellido} - DNI: ${paciente.dni} - Tel: ${paciente.telefono}`;
+                lista.appendChild(item);
+            });
+        } catch (error) {
+            const item = document.createElement("li");
+            item.textContent = error.message;
+            lista.appendChild(item);
+        }
+    }
+
+    document.getElementById("formCita").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const cita = {
+            fecha: document.getElementById("fecha").value,
+            hora: document.getElementById("hora").value,
+            motivo: document.getElementById("motivo").value,
+            paciente: {
+                id: parseInt(document.getElementById("pacienteId").value)
+            }
+        };
+
+        const mensaje = document.getElementById("mensajeCita");
+
+        try {
+            const response = await fetch(apiCitas, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(cita)
+            });
+
+            if (!response.ok) {
+                throw new Error("No se pudo registrar la cita. Verifica que el paciente exista.");
+            }
+
+            const data = await response.json();
+            mensaje.textContent = "Cita registrada con ID: " + data.id;
+            mensaje.className = "mensaje success";
+            document.getElementById("formCita").reset();
+        } catch (error) {
+            mensaje.textContent = error.message;
+            mensaje.className = "mensaje error";
+        }
+    });
+
+    async function listarCitas() {
+        const lista = document.getElementById("listaCitas");
+        lista.innerHTML = "";
+
+        try {
+            const response = await fetch(apiCitas);
+            if (!response.ok) {
+                throw new Error("No se pudieron obtener las citas");
+            }
+
+            const citas = await response.json();
+
+            citas.forEach(cita => {
+                const item = document.createElement("li");
+                item.textContent = `ID: ${cita.id} - Fecha: ${cita.fecha} - Hora: ${cita.hora} - Motivo: ${cita.motivo} - Paciente ID: ${cita.paciente.id}`;
+                lista.appendChild(item);
+            });
+        } catch (error) {
+            const item = document.createElement("li");
+            item.textContent = error.message;
+            lista.appendChild(item);
+        }
+    }
+</script>
+
+</body>
+</html>

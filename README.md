@@ -67,3 +67,14 @@ Spring Boot crea automáticamente las tablas al ejecutar el proyecto (`ddl-auto=
    spring.datasource.password=
    spring.jpa.hibernate.ddl-auto=update
    spring.jpa.show-sql=true
+
+## 🧪 Evidencia de pruebas con Postman
+
+### 📌 Registrar paciente (POST /pacientes)
+![POST Paciente](imagenes/POST.jpeg)
+
+### 📌 Listar pacientes (GET /pacientes)
+![GET Pacientes](imagenes/GET.jpeg)
+
+### 📌 Registrar cita médica (POST /citas)
+![POST Citas](imagenes/POST_CITAS.jpeg)
